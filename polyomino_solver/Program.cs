@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace polyomino_solver
 {
-    public class Point
+    public struct Point
     {
         public int X, Y;
 
@@ -22,9 +23,9 @@ namespace polyomino_solver
 
         public override bool Equals(object obj)
         {
-            var rhs = obj as Point;
-            if (rhs == null) return false;
-            return this.X == rhs.X && this.Y == rhs.Y;
+            var rhs = obj as Point?;
+            if (rhs == null || !rhs.HasValue) return false;
+            return this.X == rhs.Value.X && this.Y == rhs.Value.Y;
         }
 
         public static Point operator+(Point a, Point b)
@@ -32,6 +33,10 @@ namespace polyomino_solver
             return new Point(a.X + b.X, a.Y + b.Y);
         }
 
+        public static Point operator -(Point a, Point b)
+        {
+            return new Point(a.X - b.X, a.Y - b.Y);
+        }
         public static Point operator*(Point p, int s)
         {
             return new Point(p.X * s, p.Y * s);
@@ -45,19 +50,46 @@ namespace polyomino_solver
 
     public class Puzzle
     {
-        public readonly Point BoardSize = new Point(8, 6);
+        public Point BoardSize = new Point(8, 6);
         public Piece[] Pieces = new Piece[0];
+        public class SolutionPiece
+        {
+            public Piece Piece;
+            public Point Origin;
+            public int Turns; // clockwise
+            public Point[] Cells;
+            /*IEnumerable<Point> Cells
+            {
+                get
+                {
+                    Point xaxis, yaxis;
+                    switch (turns)
+                    {
+                        case 1: xaxis = new Point(0, 1); yaxis = new Point(-1, 0); break;
+                        case 2: xaxis = new Point(-1, 0); yaxis = new Point(0, -1); break;
+                        case 3: xaxis = new Point(0, -1); yaxis = new Point(1, 0); break;
+                        case 0:
+                        default:
+                            xaxis = new Point(1, 0); yaxis = new Point(0, 1); break;
+                    }
+
+                    foreach (var p in piece.Points)
+                        yield return xaxis * p.X + yaxis * p.Y + origin;
+                }
+            }*/
+        }
 
         public void InitPieces()
         {
-            var code = new string[] {
-                "RDL", "RDD", "LRUDRL", "RRD",
-                "DDRU", "LRDURL", "RU", "RDD",
-                "RRR", "DDD", "DDR", "RRU"
-            };
+            CreatePieces(@"RDL,RDD,LRUDRL,RRD,DDRU,LRDURL,RU,RDD,RRR,DDD,DDR,RRU");
+        }
+
+        public void CreatePieces(string text)
+        {
             var pieces = new List<Piece>();
-            foreach (var term in code)
+            foreach (var term in text.Split(',').Select(x => x.Trim()))
             {
+                if (term == "") continue;
                 var piece = new Piece();
                 var cursor = new Point(0, 0);
                 var cells = new HashSet<Point>();
@@ -81,12 +113,16 @@ namespace polyomino_solver
             this.Pieces = pieces.ToArray();
         }
 
-        public bool CheckPieces()
+        public bool CheckPieces
         {
-            int count = 0;
-            foreach (var piece in Pieces)
-                count += piece.Points.Length;
-            return count == BoardSize.X * BoardSize.Y;
+            get
+            {
+                int count = 0;
+                foreach (var piece in Pieces)
+                    count += piece.Points.Length;
+                //Console.WriteLine("CheckPieces = " + count);
+                return count <= BoardSize.X * BoardSize.Y;
+            }
         }
 
         public bool[][] BuildMatrix()
@@ -138,10 +174,44 @@ namespace polyomino_solver
             return result.ToArray();
         }
 
-        public void Solve(bool[][] problem)
+        public SolutionPiece[] Solve(bool[][] problem)
         {
+            if (!CheckPieces) {
+               // Console.WriteLine("CheckPieces failed!");
+                return null; }
             var dlx = new DLX();
+            dlx.NumPieces = Pieces.Length;
             bool[][] soln = dlx.Solve(problem);
+            if (soln == null) return null;
+
+            // convert matrix back to "pieces" form
+            var result = new List<SolutionPiece>();
+            foreach (var row in soln)
+            {
+                var spiece = new SolutionPiece();
+                Piece piece = null;
+                for (int i = 0; i < Pieces.Length; i++)
+                    if (row[i])
+                    {
+                        piece = Pieces[i];
+                        break;
+                    }
+
+                var cells = new List<Point>();
+                int index = Pieces.Length;
+                for (int y = 0; y < BoardSize.Y; y++)
+                    for (int x = 0; x < BoardSize.X; x++)
+                        if (row[index++])
+                            cells.Add(new Point(x, y));
+                spiece.Piece = piece;
+                spiece.Cells = cells.ToArray();
+                result.Add(spiece);
+            }
+            return result.ToArray();
+        }
+
+        public void PrintSolution(bool[][] soln)
+        {
             foreach (var row in soln)
             {
                 Console.WriteLine("-12345678");
@@ -154,6 +224,7 @@ namespace polyomino_solver
                     Console.WriteLine();
                 }
             }
+
         }
     }
 
@@ -176,6 +247,7 @@ namespace polyomino_solver
         public bool[][] Solve(bool[][] problem)
         {
             this.problem = problem;
+            if (problem.Length == 0) return new bool[0][];
             this.h = CreateNodes();
             int numCols = problem[0].Length;
             this.solution = new Node[numCols];
@@ -204,6 +276,7 @@ namespace polyomino_solver
             }
         }
 
+        public int NumPieces { get; set; }
         private ColumnNode h;
         private Node[] solution;
         private int solutionSize = 0;
@@ -211,22 +284,41 @@ namespace polyomino_solver
         {
             if (h.R == h) { solutionSize = k; return true; }
 
+            // check rows
+            bool hasRows = false;
+            for (var col = h.R; col != h; col = col.R)
+            {
+                if (col.D != col)
+                {
+                    hasRows = true;
+                    break;
+                }
+            }
+            //if (!hasRows) { solutionSize = k; return true; }
+
+            // all pieces used?
+            if (!hasRows && h.R.Column.Index >= NumPieces)
+            {
+                solutionSize = k; return true;
+            }
+
+
             // choose a column with minumum 1s
             ColumnNode chosenColumn = (ColumnNode)h.R;
             int minSize = chosenColumn.Size;
             for (var col = (ColumnNode)h.R; col != h; col = (ColumnNode)col.R)
-                if (col.Size < minSize)
+                if (minSize == 0 || (col.Size < minSize && col.Size != 0))
                 {
                     chosenColumn = col;
                     minSize = chosenColumn.Size;
                 }
 
             CoverColumn(chosenColumn);
-            int colcount = 0;
+            /*int colcount = 0;
             for (var col = h.R; col != h; col = col.R)
             {
                 colcount++;
-            }
+            }*/
             //Console.WriteLine("k: " + k + ", Columns: " + colcount);
             for (var r = chosenColumn.D; r != chosenColumn; r = r.D)
             {
@@ -272,6 +364,10 @@ namespace polyomino_solver
         private ColumnNode CreateNodes()
         {
             var h = new ColumnNode();
+            h.R = h;
+            h.L = h;
+            if (problem.Length == 0) return h;
+
             int numCols = problem[0].Length;
 
             // create column headers
@@ -341,10 +437,22 @@ namespace polyomino_solver
         static void Main(string[] args)
         {
             var puzzle = new Puzzle();
-            puzzle.InitPieces();
-            Console.WriteLine(puzzle.CheckPieces());
+            //puzzle.InitPieces();
+            puzzle.CreatePieces("LRUDRLDU");
+            Console.WriteLine(puzzle.CheckPieces);
             var m = puzzle.BuildMatrix();
-            puzzle.Solve(m);
+            /*using (var fout = new StreamWriter("output.txt"))
+            {
+                foreach (var row in m)
+                {
+                    foreach (var cell in row)
+                    {
+                        fout.Write(cell ? '1' : '0');
+                    }
+                    fout.WriteLine();
+                }
+            }*/
+            var soln = puzzle.Solve(m);
             Console.ReadKey();
         }
     }

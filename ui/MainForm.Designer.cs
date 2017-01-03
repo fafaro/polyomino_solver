@@ -29,80 +29,68 @@
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.solveButton = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.boardViewer1 = new ui.BoardViewer();
-            this.pieceBuilder1 = new ui.PieceBuilder();
-            this.piecesViewer1 = new ui.PiecesViewer();
+            this.pieceEditor1 = new ui.PieceEditor();
             this.tableLayoutPanel1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 200F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 249F));
             this.tableLayoutPanel1.Controls.Add(this.boardViewer1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.solveButton, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.pieceBuilder1, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.piecesViewer1, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.panel1, 1, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 3;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 250F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(702, 464);
+            this.tableLayoutPanel1.RowCount = 1;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 464F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(667, 451);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
-            // solveButton
+            // panel1
             // 
-            this.solveButton.BackColor = System.Drawing.Color.YellowGreen;
-            this.solveButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.solveButton.Location = new System.Drawing.Point(505, 3);
-            this.solveButton.Name = "solveButton";
-            this.solveButton.Size = new System.Drawing.Size(194, 34);
-            this.solveButton.TabIndex = 1;
-            this.solveButton.Text = "Solve";
-            this.solveButton.UseVisualStyleBackColor = false;
+            this.panel1.AutoScroll = true;
+            this.panel1.Controls.Add(this.pieceEditor1);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(421, 3);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(243, 458);
+            this.panel1.TabIndex = 2;
             // 
             // boardViewer1
             // 
-            this.boardViewer1.BackColor = System.Drawing.Color.Blue;
+            this.boardViewer1.BackColor = System.Drawing.Color.MidnightBlue;
             this.boardViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.boardViewer1.Location = new System.Drawing.Point(3, 3);
+            this.boardViewer1.Model = null;
             this.boardViewer1.Name = "boardViewer1";
-            this.tableLayoutPanel1.SetRowSpan(this.boardViewer1, 3);
-            this.boardViewer1.Size = new System.Drawing.Size(496, 458);
-            this.boardViewer1.TabIndex = 0;
+            this.boardViewer1.Size = new System.Drawing.Size(412, 458);
+            this.boardViewer1.TabIndex = 1;
             // 
-            // pieceBuilder1
+            // pieceEditor1
             // 
-            this.pieceBuilder1.BackColor = System.Drawing.Color.Goldenrod;
-            this.pieceBuilder1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pieceBuilder1.Location = new System.Drawing.Point(505, 217);
-            this.pieceBuilder1.Name = "pieceBuilder1";
-            this.pieceBuilder1.Size = new System.Drawing.Size(194, 244);
-            this.pieceBuilder1.TabIndex = 2;
-            // 
-            // piecesViewer1
-            // 
-            this.piecesViewer1.BackColor = System.Drawing.Color.SteelBlue;
-            this.piecesViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.piecesViewer1.Location = new System.Drawing.Point(505, 43);
-            this.piecesViewer1.Name = "piecesViewer1";
-            this.piecesViewer1.Size = new System.Drawing.Size(194, 168);
-            this.piecesViewer1.TabIndex = 3;
+            this.pieceEditor1.BackColor = System.Drawing.Color.Gray;
+            this.pieceEditor1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pieceEditor1.Location = new System.Drawing.Point(0, 0);
+            this.pieceEditor1.MinimumSize = new System.Drawing.Size(200, 1200);
+            this.pieceEditor1.Name = "pieceEditor1";
+            this.pieceEditor1.Size = new System.Drawing.Size(226, 1200);
+            this.pieceEditor1.TabIndex = 0;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(702, 464);
+            this.ClientSize = new System.Drawing.Size(667, 451);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "MainForm";
             this.Text = "Polyomino Solver";
             this.tableLayoutPanel1.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -111,9 +99,8 @@
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private BoardViewer boardViewer1;
-        private System.Windows.Forms.Button solveButton;
-        private PieceBuilder pieceBuilder1;
-        private PiecesViewer piecesViewer1;
+        private System.Windows.Forms.Panel panel1;
+        private PieceEditor pieceEditor1;
     }
 }
 
